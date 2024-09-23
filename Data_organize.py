@@ -154,6 +154,6 @@ if __name__ == "__main__":
     
     #modelate("Dados_SONAR")
     #advanced_sort_data("Dados_SONAR","DadosSonar",state=15262)
-    #show(new_dir)    
+    show()    
     
     pass

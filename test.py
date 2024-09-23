@@ -10,8 +10,8 @@ import Networks
 NE = 75
 BS = 1 # tamanho dos conjuntos trabalhados
 data = 'DadosSonar'
-models = "Networks"
-root = ""
+models_ = "Networks"
+root = ".."
 
 eps = 1e-6
 
@@ -33,7 +33,7 @@ def main():
     
     print(f'Using {device} device')
 
-    testset = MatDataset.MatDataset(f'{data}/test')
+    testset = MatDataset.MatDataset(f'{root}/{data}/test')
 
     testloader = torch.utils.data.DataLoader(testset,
                                         batch_size=BS,
@@ -42,6 +42,7 @@ def main():
 
     model = Networks.Sonar_CNN(testset.classes)
 
+    models = os.path.join(root,models_)
     for archive in os.listdir(models):
         
         check = torch.load(os.path.join(models,archive))
