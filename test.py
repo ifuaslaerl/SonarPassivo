@@ -19,7 +19,11 @@ def show(matriz,title):
     plt.title(title)
     plt.imshow(matriz , cmap='cividis')
     plt.colorbar()
-    plt.show()
+    i = 0
+    while os.path.exists(f'Graficos/grafico{i}.png') :
+        i += 1
+    plt.savefig(f"Graficos/grafico{i}.png")
+    plt.clf()
 
 def main():
 
