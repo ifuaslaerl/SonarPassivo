@@ -8,11 +8,11 @@ def modelate(path):
     for archive in os.listdir(path):
         new_path = os.path.join(path,archive)
         if new_path.endswith('.mat') :
-          try :
-            os.rename(new_path,f'{path}/{archive[0]}/{archive}')    
-          except FileNotFoundError :
-            os.mkdir(f'{path}/{archive[0]}')
-            os.rename(new_path,f'{path}/{archive[0]}/{archive}')
+            try :
+                os.rename(new_path,f'{path}/{archive[0]}/{archive}')    
+            except FileNotFoundError :
+                os.mkdir(f'{path}/{archive[0]}')
+                os.rename(new_path,f'{path}/{archive[0]}/{archive}')
     
 def move(path1 , path2):
         
@@ -36,12 +36,12 @@ def sort_data(main_dir,new_dir,sections):
         
         cont=0
         for i in range(size):
-           
+        
             if i+1 > round(percent[cont]*size) : cont += 1
             path2 = os.path.join(new_path,archives[i])
             new_path2 = f'{new_dir}/{sections[cont]}/{directorie}/{archives[i]}'
             move(path2,new_path2)     
-     
+
 def counting(data):
 
     mapa = {}
@@ -56,7 +56,7 @@ def counting(data):
         mapa[i] = contador1
         mapa2[contador1] = i
         contador1+=1
-          
+        
         for j in folder :
             path2 = os.path.join(path,j)
             folder = sorted(os.listdir(path2))
@@ -87,7 +87,7 @@ def counting(data):
 def show(new_dir):
 
     matriz , mapa1 , mapa2 = counting(new_dir)
-     
+    
     print("#"*11,end="")
     for i in range(len(matriz)):
         for j in range(len(matriz[i])):
@@ -141,7 +141,6 @@ def split_save(data,classe,out_path,state=None):
     savemat(foldering(os.path.join(out_path, f'validate/{classe}/{classe}_val.mat')) , {'ent_norm': val_data})
     savemat(foldering(os.path.join(out_path, f'test/{classe}/{classe}_test.mat')) , {'ent_norm': test_data})
 
-
 def foldering(string):
     
     for i in range(len(string)):
@@ -156,4 +155,5 @@ if __name__ == "__main__":
     #modelate("Dados_SONAR")
     #advanced_sort_data("Dados_SONAR","DadosSonar",state=15262)
     #show(new_dir)    
-
+    
+    pass
