@@ -21,7 +21,7 @@ def move(path1 , path2):
             os.mkdir(path2[:i])
     os.rename(path1,path2)
         
-def sort_data(main_dir,new_dir,sections):
+def sort_data(main_dir,new_dir,sections,percent):
     
     for directorie in os.listdir(main_dir):
         new_path = os.path.join(main_dir,directorie)
