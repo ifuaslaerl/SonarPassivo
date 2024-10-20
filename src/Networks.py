@@ -54,7 +54,7 @@ def train_loop(model,trainloader) :
 
         pred = model(X)
         loss = model.criterion(pred, y)
-       
+
         train_loss += loss.item()
 
         loss.backward()
@@ -111,7 +111,6 @@ def fit(model,trainloader,validateloader,root,NE):
             'confusion' : matriz
             }, os.path.join(root,file_name))
 
-
 def FGSM(sample, eps, data_grad):
 
     sign_data_grad = data_grad.sign()
@@ -119,7 +118,6 @@ def FGSM(sample, eps, data_grad):
     adv_sample = sample + eps*sign_data_grad
     
     return adv_sample
-
 
 def adv_test_loop(model,dataloader,eps) : 
 
