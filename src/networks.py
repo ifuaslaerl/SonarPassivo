@@ -1,10 +1,12 @@
-
-import torch
-import torch.nn as nn
-import torch.optim as optim
-import torch.nn.functional as F
+""" Module providing neuron network functions. """
 import os
+import typing
 from time import time
+from torch import optim
+from torch import nn
+import torch.nn.functional as F
+import torch
+import numpy as np
 
 NF = 128
 TK = 71
@@ -12,15 +14,15 @@ PO = 4
 DR = 0.5
 NN = 75
 
-inf = 2e18
+INF = 2e18
 
-class Sonar_CNN(nn.Module):
+class SonarCNN(nn.Module):
+    """ Class representing Neuron Network to categorize Ships and submarines. """
 
     def __init__(self,classes):
-        super(Sonar_CNN, self).__init__()
+        super().__init__()
 
         self.classes = classes
-
         self.conv1d = nn.Conv1d(1 , NF , TK)
         self.maxpooling1d = nn.MaxPool1d(PO)
         self.dropout = nn.Dropout(DR)
@@ -31,28 +33,35 @@ class Sonar_CNN(nn.Module):
                     nn.ReLU(),
                     nn.Linear(NN,len(self.classes))
                 )
-        
+
         self.criterion = nn.CrossEntropyLoss()
         self.optimizer = optim.Adam(self.parameters())
 
     def forward(self, x):
-        
+        """ Foward information to next node.
+
+        Args:
+            x (Tensor): information in node.
+
+        Returns:
+            Tensor: information in fowarded node.
+        """
+
         x = F.relu(self.conv1d(x))
-        x = self.maxpooling1d(x)    
+        x = self.maxpooling1d(x)
         x = self.dropout(x)
         x = self.flatten(x)
-
         logits = self.dense(x)
 
         return logits
 
-def train_loop(model,trainloader) :
+def train_loop(model : SonarCNN, trainloader: torch.utils.data.dataloader.DataLoader):
 
     model.train()
     train_loss = 0
-    for batch, (X, y) in enumerate(trainloader) :
+    for batch, (x, y) in enumerate(trainloader) :
 
-        pred = model(X)
+        pred = model(x)
         loss = model.criterion(pred, y)
 
         train_loss += loss.item()
@@ -63,7 +72,7 @@ def train_loop(model,trainloader) :
 
     return train_loss/len(trainloader)
 
-def test_loop(model,dataloader) : 
+def test_loop(model: SonarCNN,dataloader: torch.utils.data.dataloader.DataLoader): 
 
     model.eval()
     classes = len(model.classes)
@@ -85,7 +94,7 @@ def test_loop(model,dataloader) :
 
     return validate_loss/len(dataloader) , correct/len(dataloader.dataset) , matriz
 
-def fit(model,trainloader,validateloader,root,NE):
+def fit(model: SonarCNN,trainloader: torch.utils.data.dataloader.DataLoader,validateloader: torch.utils.data.dataloader.DataLoader,root,NE):
 
     start = time()
     minimum = inf
@@ -114,12 +123,11 @@ def fit(model,trainloader,validateloader,root,NE):
 def FGSM(sample, eps, data_grad):
 
     sign_data_grad = data_grad.sign()
-
     adv_sample = sample + eps*sign_data_grad
-    
+
     return adv_sample
 
-def adv_test_loop(model,dataloader,eps) : 
+def adv_test_loop(model: SonarCNN,dataloader: torch.utils.data.dataloader.DataLoader,eps):
 
     torch.multiprocessing.set_sharing_strategy('file_system')
 
@@ -130,7 +138,7 @@ def adv_test_loop(model,dataloader,eps) :
     matriz = [[0 for i in range(classes)] for j in range(classes) ] 
 
     for data , label in dataloader:
-        
+
         data.requires_grad = True
 
         output = model(data)
@@ -152,10 +160,65 @@ def adv_test_loop(model,dataloader,eps) :
 
         if final_pred.item() == label.item(): correct += 1
         matriz[label.item()-1][final_pred.item()-1] += 1
-            
+
     for i in range(len(matriz)) :   
         soma = sum(matriz[i])
         if soma : matriz[i] = [ round(100*matriz[i][j]/soma) for j in range(len(matriz[i])) ]
         else : matriz[i] = [0]*len(matriz[i])
 
     return adv_loss/len(dataloader) , correct/len(dataloader.dataset) , matriz
+
+def adv_data_gen(model : SonarCNN, trainloader: torch.utils.data.dataloader.DataLoader, eps: float) -> typing.List :
+
+    torch.multiprocessing.set_sharing_strategy('file_system')
+
+    model.eval()
+
+    adversarial_samples = []
+    labels_samples = []
+
+    for data, label in trainloader:
+
+        data.requires_grad = True
+        pred = model(data)
+        init_pred = pred.max(1, keepdim=True)[1]
+
+        if init_pred != label:
+            continue
+
+        loss = model.criterion(pred, label)
+        model.zero_grad()
+        loss.backward()
+        data_grad = data.grad.data
+
+        adv_sample = FGSM(data, eps, data_grad)
+
+        adversarial_samples.append(adv_sample)
+        labels_samples.append(label)
+
+    adversarial_dataset = list(zip(adversarial_samples, labels_samples))
+
+    return adversarial_dataset
+
+def save_set(dataset , out_path: str) -> None:
+
+    if not os.path.exists(out_path):
+        os.makedirs(out_path)
+
+    organized_data = {}
+    for data, label in dataset:
+        label = label.item()
+        if label not in organized_data:
+            organized_data[label] = []
+        organized_data[label].append(data)
+
+    for label, data in organized_data.items():
+        data = np.concatenate(data)
+        print(data.shape)
+        break
+        label_dir = os.path.join(save_dir, str(label))
+        os.makedirs(label_dir, exist_ok=True)  # Criar diretório para o label
+        mat_file_path = os.path.join(label_dir, f'label_{label}.mat')
+
+        # Salvar as imagens em um arquivo .mat
+        sio.savemat(mat_file_path, {'images': np.array(images)})
