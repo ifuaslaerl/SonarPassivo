@@ -3,7 +3,8 @@
 import torch
 import torchvision.transforms as transforms
 import os
-from src import Networks , MatDataset
+
+from src import MatDataset, Networks
 
 NE = 75
 BS = 1 # tamanho dos conjuntos trabalhados
