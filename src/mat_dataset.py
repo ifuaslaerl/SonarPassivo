@@ -36,8 +36,7 @@ class MatDataset(Dataset) :
 
     def __getitem__(self, index: int) -> typing.Tuple[torch.Tensor , torch.Tensor]:
 
-        mat_path , line_idx = self.data_label[index][0]
-        label = self.data_label[index][1]
+        (mat_path , line_idx) , label = self.data_label[index]
 
         mat_data = scipy.io.loadmat(mat_path)
         data = mat_data["ent_norm"][line_idx]
@@ -73,7 +72,7 @@ class MatDataset(Dataset) :
             if index > (1-percentage)*len(self.data_label):
                 break
 
-        self.data_label.extend(new_dataset)
+        self.data_label = new_dataset
 
     def save(self, save_path=""):
         """_summary_

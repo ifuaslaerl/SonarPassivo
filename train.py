@@ -8,9 +8,6 @@ BS = 1 # tamanho dos conjuntos trabalhados
 
 if __name__ == "__main__" :
 
-    DATA = "data/DadosSonar"
-    ROOT = ""
-
     DEVICE = (
         "cuda"
         if torch.cuda.is_available()
@@ -21,8 +18,8 @@ if __name__ == "__main__" :
 
     print(f"Using {DEVICE} device")
 
-    trainset = mat_dataset.MatDataset(f"{DATA}/train")
-    validateset = mat_dataset.MatDataset(f"{DATA}/validate")
+    trainset = mat_dataset.MatDataset("data/Datasets/DadosSonar/train")
+    validateset = mat_dataset.MatDataset("data/Datasets/DadosSonar/validate")
 
     trainloader = torch.utils.data.DataLoader(trainset,
                                             batch_size=BS,
@@ -36,4 +33,4 @@ if __name__ == "__main__" :
 
     classes = trainset.classes
     model = networks.SonarCNN(classes)
-    networks.fit(model, trainloader, validateloader, ROOT, NE)
+    networks.fit(model, trainloader, validateloader, "data/Networks/robust", NE)
