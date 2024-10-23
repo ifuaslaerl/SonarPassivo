@@ -1,14 +1,15 @@
-""" Module made to train Artificial Neuron Networks. """
+""" Module made to Debug Artificial Neuron Networks Libraries. """
+import os
 import torch
 import torch.utils
-from src import networks, mat_dataset
+from src import networks , mat_dataset
 
 NE = 75
 BS = 1 # tamanho dos conjuntos trabalhados
 
 if __name__ == "__main__" :
 
-    DATA = "data/DadosSonar"
+    DATA = "data/Datasets/DadosSonar"
     ROOT = ""
 
     DEVICE = (
@@ -22,18 +23,27 @@ if __name__ == "__main__" :
     print(f"Using {DEVICE} device")
 
     trainset = mat_dataset.MatDataset(f"{DATA}/train")
-    validateset = mat_dataset.MatDataset(f"{DATA}/validate")
-
     trainloader = torch.utils.data.DataLoader(trainset,
-                                            batch_size=BS,
-                                            shuffle=True,
-                                            num_workers=2)
-
-    validateloader = torch.utils.data.DataLoader(validateset,
                                             batch_size=BS,
                                             shuffle=True,
                                             num_workers=2)
 
     classes = trainset.classes
     model = networks.SonarCNN(classes)
-    networks.fit(model, trainloader, validateloader, ROOT, NE)
+
+    # por um for aq depois
+    NETWORK = "0976.pth"
+    check = torch.load(os.path.join("data/Networks",NETWORK))
+    model.load_state_dict(check['model_state_dict'])
+    model.optimizer.load_state_dict(check['optimizer_state_dict'])
+    loss = check['loss_out']
+    accuracy = check['accuracy']
+
+    model.eval()
+    data = networks.adv_data_gen(model, trainloader, 1e-6)
+
+    new_data
+    for dados, label in data:
+        
+
+    networks.save_set(data,"data/Datasets/Adversarial",classes)

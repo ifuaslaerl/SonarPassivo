@@ -1,5 +1,4 @@
 """ Module providing functions to organize data. """
-
 import os
 import typing
 from random import shuffle , seed

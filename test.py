@@ -1,19 +1,10 @@
-""" App made to test Networks. """
-
+""" Module made to test Networks. """
 import os
 import torch
-import matplotlib.pyplot as plt
-import seaborn as sns
-from SonarPassivo.src import networks
-from src import MatDataset
+from src import networks, mat_dataset, analysis
 
 NE = 75
 BS = 1 # tamanho dos conjuntos trabalhados
-
-def show(matriz,title):
-    plt.title(title)
-    sns.heatmap(matriz, annot=True, fmt="d", cmap="cividis", cbar=True, annot_kws={"size" : 16})
-    plt.show()
 
 if __name__ == "__main__" :
     DATA = "data/DadosSonar"
@@ -28,14 +19,14 @@ if __name__ == "__main__" :
 
     print(f'Using {DEVICE} device')
 
-    testset = MatDataset.MatDataset(f'{DATA}/test')
+    testset = mat_dataset.MatDataset(f'{DATA}/test')
 
     testloader = torch.utils.data.DataLoader(testset,
                                         batch_size=BS,
                                         shuffle=True,
                                         num_workers=2)
 
-    model = networks.Sonar_CNN(testset.classes)
+    model = networks.SonarCNN(testset.classes)
 
     for archive in os.listdir(MODELS):
         check = torch.load(os.path.join(MODELS,archive))
@@ -46,4 +37,4 @@ if __name__ == "__main__" :
         model.eval()
         real_loss , real_accuracy , matrix = networks.test_loop(model,testloader)
         print(f'{archive} - loss_out = {loss :.3f} - real_loss = {real_loss :.3f} - accuracy = {accuracy :.3f} - real_accuracy = {real_accuracy :.3f}')
-        show(matrix,f'{real_loss}')
+        analysis.show_matrix(matrix,f'{real_loss}')
