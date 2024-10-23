@@ -42,8 +42,4 @@ if __name__ == "__main__" :
     model.eval()
     data = networks.adv_data_gen(model, trainloader, 1e-6)
 
-    new_data
-    for dados, label in data:
-        
-
-    networks.save_set(data,"data/Datasets/Adversarial",classes)
+    mat_dataset.save_set(data,"data/Datasets/Adversarial",classes)

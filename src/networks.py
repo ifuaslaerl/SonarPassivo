@@ -2,12 +2,10 @@
 import os
 import typing
 from time import time
-import scipy.io
 from torch import optim
 from torch import nn
 import torch.nn.functional as F
 import torch
-import numpy as np
 
 NF = 128
 TK = 71
@@ -276,22 +274,3 @@ def adv_data_gen(model : SonarCNN, trainloader: torch.utils.data.dataloader.Data
 
     print(f"Adverdarial dataset generated in {round(time()-start)} seconds.")
     return adversarial_dataset
-
-def save_set(dataset: typing.List, out_path: str, classes: typing.List[str]) -> None:
-
-    if not os.path.exists(out_path):
-        os.makedirs(out_path)
-
-    organized_data = {}
-    for data, label in dataset:
-        label = label.item()
-        if label not in organized_data:
-            organized_data[label] = []
-        organized_data[label].append(data.detach().numpy())
-
-    for label, data in organized_data.items():
-        data = np.concatenate(data)
-        label_dir = os.path.join(out_path, classes[label])
-        os.makedirs(label_dir, exist_ok=True)  # Criar diretório para o label
-        mat_file_path = os.path.join(label_dir, f'{classes[label]}.mat')
-        scipy.io.savemat(mat_file_path, {'ent_norm': np.array(data)})
