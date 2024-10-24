@@ -33,4 +33,8 @@ if __name__ == "__main__" :
 
     classes = trainset.classes
     model = networks.SonarCNN(classes)
+<<<<<<< HEAD
     train_data = network.fit(model, trainloader, validateloader, "data/Networks/robust", NE)
+=======
+    networks.fit(model, trainloader, validateloader, "data/Networks/robust", NE)
+>>>>>>> 0f405ae50c0fec562440135a234378fe91c7a611
