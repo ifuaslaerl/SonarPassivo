@@ -238,5 +238,21 @@ def foldering(string: str) -> str:
 
     return string
 
+def find_name(path: str, extencion: str) -> str:
+    """ Grants that the named file do not exist.
+
+    Args:
+        path (str): Original path to file.
+        extencion (str): Type of file. ex: .csv
+
+    Returns:
+        str: New file name.
+    """
+
+    adition = 1
+    while os.path.exists(path+adition+extencion):
+        adition+=1
+    return path+adition+extencion
+
 if __name__ == "__main__":
     pass

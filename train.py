@@ -1,7 +1,7 @@
 """ Module made to train Artificial Neuron Networks. """
 import torch
 import torch.utils
-from src import networks, mat_dataset
+from src import networks, mat_dataset, data_organize
 
 NE = 75
 BS = 1 # tamanho dos conjuntos trabalhados
@@ -33,8 +33,7 @@ if __name__ == "__main__" :
 
     classes = trainset.classes
     model = networks.SonarCNN(classes)
-<<<<<<< HEAD
-    train_data = network.fit(model, trainloader, validateloader, "data/Networks/robust", NE)
-=======
-    networks.fit(model, trainloader, validateloader, "data/Networks/robust", NE)
->>>>>>> 0f405ae50c0fec562440135a234378fe91c7a611
+    train_data = networks.fit(model, trainloader, validateloader, "data/Networks/robust", NE)
+
+    file_name = data_organize.find_name('data/Training_data/data','.csv')
+    train_data.to_csv(file_name)

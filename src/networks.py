@@ -6,6 +6,8 @@ from torch import optim
 from torch import nn
 import torch.nn.functional as F
 import torch
+import pandas as pd
+from src import data_organize
 
 NF = 128
 TK = 71
@@ -118,7 +120,7 @@ def test_loop(model: SonarCNN,dataloader: torch.utils.data.dataloader.DataLoader
 
 def fit(model: SonarCNN, trainloader: torch.utils.data.dataloader.DataLoader,\
     validateloader: torch.utils.data.dataloader.DataLoader,\
-    root: str, numer_of_epochs: int) -> None:
+    root: str, numer_of_epochs: int) -> pd.DataFrame:
     """ Fit Neural Network with epochs of train loops.
 
     Args:
@@ -129,29 +131,61 @@ def fit(model: SonarCNN, trainloader: torch.utils.data.dataloader.DataLoader,\
         numer_of_epochs (int): Number of epochs.
     """
 
+    train_data = {}
+
+    train_data['loss_in'] = []
+    train_data['loss_out'] = []
+    train_data['loss_out_weak'] = []
+    train_data['loss_out_strong'] = []
+
+    train_data['accuracy_strong'] = []
+    train_data['accuracy_weak'] = []
+    train_data['accuracy_out'] = []
+    train_data['accuracy_in'] = []
+
     start = time()
     minimum = INF
     for epoch in range(numer_of_epochs):
 
         loss_in = train_loop(model,trainloader)
-        loss_out , accuracy , matriz = test_loop(model,validateloader)
+        loss_in , accuracy_in , matrix = test_loop(model, validateloader)
+        loss_out, accuracy_out , matrix = test_loop(model, validateloader)
+        loss_out_weak, accuracy_weak, matrix = adv_test_loop(model, validateloader, 0.001)
+        loss_out_strong, accuracy_strong , matrix = adv_test_loop(model, validateloader, 0.01)
 
-        print(f'Epoch [{epoch+1}/{numer_of_epochs}] - Loss_in: {loss_in :.3f} - Loss_out: {loss_out :.3f} - Accuracy: {(100*accuracy):>0.1f}% - in {int(time()-start) :03d} seconds')
+        train_data['loss_in'].append(loss_in)
+        train_data['loss_out'].append(loss_out)
+        train_data['loss_out_weak'].append(loss_out_weak)
+        train_data['loss_out_strong'].append(loss_out_strong)
+
+        train_data['accuracy_strong'].append(accuracy_strong)
+        train_data['accuracy_weak'].append(accuracy_weak)
+        train_data['accuracy_out'].append(accuracy_out)
+        train_data['accuracy_in'].append(accuracy_in)
+
+        print(f'Epoch [{epoch+1}/{numer_of_epochs}] - Loss_in: {loss_in :.3f} - Loss_out: {loss_out :.3f} - in {int(time()-start) :03d} seconds')
 
         if minimum > loss_out :
             minimum = loss_out
 
-            file_name = f'{int(1000*accuracy) :04d}.pth'
+            full_path = os.path.join(root, f'{int(1000*loss_out) :04d}')
+            full_path = data_organize.find_name(full_path,'.pth')
 
             torch.save({
                 'model_state_dict': model.state_dict(),
                 'optimizer_state_dict': model.optimizer.state_dict(),
                 'epoch': epoch,    
                 'loss_in' : loss_in,
-                'loss_out': loss_out,   
-                'accuracy' : accuracy,
-                'confusion' : matriz
-                }, os.path.join(root,file_name))
+                'loss_out': loss_out,
+                'loss_out_weak' : loss_out_weak,
+                'loss_out_strong' : loss_out_strong,
+                'accuracy_strong' : accuracy_strong,
+                'accuracy_weak' : accuracy_weak,   
+                'accuracy_in' : accuracy_in,
+                'accuracy_out' : accuracy_out
+                }, full_path)
+
+    return pd.DataFrame.from_dict(train_data)
 
 def fgsm(sample: any, eps: float, data_grad: torch.Tensor) -> any:
     """ Generate adversarial data from sample and loss gradient. 
