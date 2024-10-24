@@ -18,7 +18,7 @@ if __name__ == "__main__" :
 
     print(f"Using {DEVICE} device")
 
-    trainset = mat_dataset.MatDataset("data/Datasets/DadosSonar/train")
+    trainset = mat_dataset.MatDataset("data/Datasets/DadosSonar/adversarial_training")
     validateset = mat_dataset.MatDataset("data/Datasets/DadosSonar/validate")
 
     trainloader = torch.utils.data.DataLoader(trainset,

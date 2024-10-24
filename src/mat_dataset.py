@@ -106,8 +106,12 @@ def save_set(dataset: typing.List, out_path: str, classes: typing.List[str]) -> 
         organized_data[label].append(data)
 
     for label, data in organized_data.items():
+        print(data)
+        print(type(data))
+        print(data.shape)
+        break
         data = np.concatenate(data)
         label_dir = os.path.join(out_path, classes[label])
         os.makedirs(label_dir, exist_ok=True)  # Criar diretório para o label
         mat_file_path = os.path.join(label_dir, f'{classes[label]}.mat')
-        scipy.io.savemat(mat_file_path, {'ent_norm': np.array(data)})
+        scipy.io.savemat(mat_file_path, {'ent_norm': np.array(data, dtype=float)})

@@ -250,9 +250,9 @@ def find_name(path: str, extencion: str) -> str:
     """
 
     adition = 1
-    while os.path.exists(path+adition+extencion):
+    while os.path.exists(path+str(adition)+extencion):
         adition+=1
-    return path+adition+extencion
+    return path+str(adition)+extencion
 
 if __name__ == "__main__":
     pass
