@@ -42,4 +42,4 @@ if __name__ == "__main__" :
     model.eval()
     data = networks.adv_data_gen(model, trainloader, 1e-6)
 
-    mat_dataset.save_set(data,"data/Datasets/Adversarial",classes)
+    mat_dataset.save_set(data,"data/Datasets/DadosSonar/adversarial",classes)

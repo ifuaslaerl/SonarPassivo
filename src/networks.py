@@ -141,17 +141,17 @@ def fit(model: SonarCNN, trainloader: torch.utils.data.dataloader.DataLoader,\
         if minimum > loss_out :
             minimum = loss_out
 
-            file_name = f'Networks/{int(1000*accuracy) :04d}.pth'
+            file_name = f'{int(1000*accuracy) :04d}.pth'
 
             torch.save({
-            'model_state_dict': model.state_dict(),
-            'optimizer_state_dict': model.optimizer.state_dict(),
-            'epoch': epoch,    
-            'loss_in' : loss_in,
-            'loss_out': loss_out,   
-            'accuracy' : accuracy,
-            'confusion' : matriz
-            }, os.path.join(root,file_name))
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': model.optimizer.state_dict(),
+                'epoch': epoch,    
+                'loss_in' : loss_in,
+                'loss_out': loss_out,   
+                'accuracy' : accuracy,
+                'confusion' : matriz
+                }, os.path.join(root,file_name))
 
 def fgsm(sample: any, eps: float, data_grad: torch.Tensor) -> any:
     """ Generate adversarial data from sample and loss gradient. 
@@ -187,7 +187,7 @@ def adv_test_loop(model: SonarCNN,dataloader: torch.utils.data.dataloader.DataLo
     torch.multiprocessing.set_sharing_strategy('file_system')
 
     model.eval()
-    classes = len(model.classes)
+    classes = model.classes
     adv_loss, correct = 0 , 0
 
     matrix = [[0 for i in classes] for j in classes]
@@ -217,14 +217,16 @@ def adv_test_loop(model: SonarCNN,dataloader: torch.utils.data.dataloader.DataLo
             correct += 1
         matrix[label.item()-1][final_pred.item()-1] += 1
 
+    matriz = []
     for line in matrix:
         soma = sum(line)
         if soma:
             line = [round(100*value/soma) for value in line]
         else:
             line = [0]*len(line)
+        matriz.append(line)
 
-    return adv_loss/len(dataloader) , correct/len(dataloader.dataset) , matrix
+    return adv_loss/len(dataloader) , correct/len(dataloader.dataset) , matriz
 
 def adv_data_gen(model : SonarCNN, trainloader: torch.utils.data.dataloader.DataLoader,\
     eps: float) -> typing.List :
