@@ -57,3 +57,4 @@ def show_matrix(matrix: typing.List[typing.List] ,title : str):
     plt.title(title)
     sns.heatmap(matrix, annot=True, fmt="d", cmap="cividis", cbar=True, annot_kws={"size" : 16})
     plt.show()
+    # TODO colocar um savefig aqui depois
