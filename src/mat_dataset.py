@@ -125,7 +125,8 @@ def save_set(dataset: typing.List, out_path: str, classes: typing.List[str]) -> 
                 organized_data[label] = []
             data = scipy.io.loadmat(mat_path)["ent_norm"][line_idx]
             organized_data[label].append(data)
-            print(f"{index/len(dataset): .2}% of dataset loaded.")
+            if index%len(dataset):
+                print(f"{index//len(dataset)}% of dataset loaded.")
 
     except ValueError:
         for index, (data, label) in enumerate(dataset):
@@ -133,7 +134,8 @@ def save_set(dataset: typing.List, out_path: str, classes: typing.List[str]) -> 
             if label not in organized_data:
                 organized_data[label] = []
             organized_data[label].append(data.detach().numpy())
-            print(f"{index/len(dataset): .2}% of dataset loaded.")
+            if index%len(dataset):
+                print(f"{index//len(dataset)}% of dataset loaded.")
 
     for label, data in organized_data.items():
         data = np.concatenate(data)
