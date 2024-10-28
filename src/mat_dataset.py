@@ -1,5 +1,5 @@
 """ Module providing MatDataset. """
-from random import shuffle
+from random import shuffle, seed
 import os
 import typing
 import numpy as np
@@ -49,39 +49,58 @@ class MatDataset(Dataset) :
 
         return data , label
 
-    def merge(self, dataset: 'MatDataset', percentage: float):
-        """ Merge other dataset at this one.
+    def get_dataset(self, percentage: float, random_state=None) -> typing.List:
+        """ get percentage of data.
 
         Args:
-            dataset (MatDataset): Dataset to be merged.
+            percentage (float): percentage of data to be get.
+            random_state (any): seed to randomize. Default to None.
+
+        Returns:
+            typing.List: data.
         """
 
         new_dataset = []
 
-        shuffle(dataset.data_label)
-        for index, data in enumerate(dataset.data_label):
-            new_dataset.append(data)
-            #print(index, percentage*len(dataset.data_label))
-            if index > percentage*len(dataset.data_label):
-                break
+        if random_state: 
+            seed(random_state)
 
         shuffle(self.data_label)
         for index, data in enumerate(self.data_label):
             new_dataset.append(data)
-            #print(index, percentage*len(dataset.data_label))
-            if index > (1-percentage)*len(self.data_label):
+            if index > percentage*len(self.data_label):
                 break
 
-        self.data_label = new_dataset
+        print(f"Dataset {self} saved.")
+        return new_dataset
 
-    def save(self, save_path=""):
+    def merge(self, dataset: 'MatDataset', percentage: float, random_state=None) -> None:
+        """ Merge other dataset at this one.
+
+        Args:
+            dataset (MatDataset): Dataset to be merged.
+            random_state (any): seed to randomize. Default to None.
+        """
+
+        new_dataset = []
+
+        for data in self.get_dataset(percentage,random_state):
+            new_dataset.append(data)
+
+        for data in dataset.get_dataset(1-percentage,random_state):
+            new_dataset.append(data)
+
+        self.data_label = new_dataset
+        print(f"Datasets {self} and {dataset} merged.")
+
+    def save(self, save_path=None) -> None:
         """_summary_
 
         Args:
             save_path (str, optional): Path to save data. Defaults to main path.
         """
 
-        if save_path == "":
+        if not save_path:
             save_path = self.main_path
 
         save_set(self.data_label, save_path, self.classes)
@@ -95,23 +114,33 @@ def save_set(dataset: typing.List, out_path: str, classes: typing.List[str]) -> 
         classes (typing.List[str]): Classes of the datasets.
     """
 
+    organized_data = {}
+
     if not os.path.exists(out_path):
         os.makedirs(out_path)
 
-    organized_data = {}
-    for data, label in dataset:
-        #label = label.item()
-        if label not in organized_data:
-            organized_data[label] = []
-        organized_data[label].append(data)
+    try:
+        for index, ((mat_path, line_idx), label) in enumerate(dataset):
+            if label not in organized_data:
+                organized_data[label] = []
+            data = scipy.io.loadmat(mat_path)["ent_norm"][line_idx]
+            organized_data[label].append(data)
+            print(f"{index/len(dataset): .2}% of dataset loaded.")
+
+    except ValueError:
+        for index, (data, label) in enumerate(dataset):
+            label = label.item()
+            if label not in organized_data:
+                organized_data[label] = []
+            organized_data[label].append(data.detach().numpy())
+            print(f"{index/len(dataset): .2}% of dataset loaded.")
 
     for label, data in organized_data.items():
-        print(data)
-        print(type(data))
-        print(data.shape)
-        break
         data = np.concatenate(data)
         label_dir = os.path.join(out_path, classes[label])
         os.makedirs(label_dir, exist_ok=True)  # Criar diretório para o label
         mat_file_path = os.path.join(label_dir, f'{classes[label]}.mat')
         scipy.io.savemat(mat_file_path, {'ent_norm': np.array(data, dtype=float)})
+        print(f"{mat_file_path} saved.")
+
+    print("Data saved.")
