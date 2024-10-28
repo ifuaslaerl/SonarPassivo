@@ -304,7 +304,8 @@ def adv_data_gen(model : SonarCNN, trainloader: torch.utils.data.dataloader.Data
 
         adversarial_samples.append(adv_sample)
         labels_samples.append(label)
-        print(f"{100*index/len(trainloader) : .1f}% of adversarial dataset generated.")
+        if (index + 1) % (len(trainloader) // 10) == 0:
+            print(f"{(index + 1) / len(trainloader) * 100:.0f}% of dataset generated.")
 
     adversarial_dataset = list(zip(adversarial_samples, labels_samples))
 
